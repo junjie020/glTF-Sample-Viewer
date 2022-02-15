@@ -310,11 +310,17 @@ class iblSampler
             this.gl.activeTexture(this.gl.TEXTURE0+0);
 
             // Bind texture ID to active texture
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.inputTextureID);
+
+            this.gl.activeTexture(this.gl.TEXTURE0+1);
             this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.cubemapTextureID);
 
             // map shader uniform to texture unit (TEXTURE0)
-            const location = this.gl.getUniformLocation(shader.program,"u_cubemapTexture");
+            const location = this.gl.getUniformLocation(shader.program,"u_panorama");
             this.gl.uniform1i(location, 0); // texture unit 0
+
+            const l1 = this.gl.getUniformLocation(shader.program,"uCubeMap");
+            this.gl.uniform1i(l1, 1);
 
 
             shader.updateUniform("u_roughness", roughness);

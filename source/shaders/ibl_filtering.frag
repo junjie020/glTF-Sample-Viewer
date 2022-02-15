@@ -5,7 +5,49 @@ precision mediump float;
 #define MATH_PI 3.1415926535897932384626433832795
 //#define MATH_INV_PI (1.0 / MATH_PI)
 
+//uniform samplerCube uCubeMap;
+//uniform sampler2D uCubemap;
+uniform sampler2D u_panorama;
 uniform samplerCube uCubeMap;
+// vec2 dir2spherecoord(vec3 v)
+// {
+// 	return vec2(
+// 		0.5f + 0.5f * atan(v.z, v.x) / MATH_PI,
+// 		acos(v.y) / MATH_PI);
+// }
+
+
+vec2 dirToUV(vec3 dir)
+{
+	return vec2(
+		0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
+		acos(dir.y) / MATH_PI);
+}
+
+vec4 sample_source(vec3 dir, float lod)
+{
+	vec2 src = dirToUV(dir);
+
+    // vec4 p_clr = textureLod(u_panorama, src, lod);
+    //vec4 cm_clr = textureLod(uCubeMap, dir, lod);
+
+    vec4 p_clr = texture(u_panorama, src);
+    vec4 cm_clr = texture(uCubeMap, dir);
+
+    vec4 diff = p_clr - cm_clr;//cm_clr - p_clr;
+    return vec4(
+        max(diff.r, 0.0),
+        max(diff.g, 0.0),
+        max(diff.b, 0.0),
+        max(diff.a, 0.0)
+    );
+    //return cm_clr;
+
+	// return  texture(u_panorama, src).rgb;
+
+    // vec2 uv = dir2spherecoord(dir);
+    // return textureLod(u_panorama, uv, lod);
+}
 
 // enum
 const int cLambertian = 0;
@@ -52,12 +94,12 @@ vec3 uvToXYZ(int face, vec2 uv)
         return vec3(    -uv.x,  +uv.y,     -1.f);}
 }
 
-vec2 dirToUV(vec3 dir)
-{
-    return vec2(
-            0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
-            1.f - acos(dir.y) / MATH_PI);
-}
+// vec2 dirToUV(vec3 dir)
+// {
+//     return vec2(
+//             0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
+//             1.f - acos(dir.y) / MATH_PI);
+// }
 
 float saturate(float v)
 {
@@ -302,7 +344,8 @@ vec3 filterColor(vec3 N)
         if(u_distribution == cLambertian)
         {
             // sample lambertian at a lower resolution to avoid fireflies
-            vec3 lambertian = textureLod(uCubeMap, H, lod).rgb;
+            //vec3 lambertian = textureLod(uCubeMap, H, lod).rgb;
+            vec3 lambertian = sample_source(H, lod).rgb;
 
             //// the below operations cancel each other out
             // lambertian *= NdotH; // lamberts law
@@ -325,7 +368,8 @@ vec3 filterColor(vec3 N)
                     // without this the roughness=0 lod is too high
                     lod = u_lodBias;
                 }
-                vec3 sampleColor = textureLod(uCubeMap, L, lod).rgb;
+                //vec3 sampleColor = textureLod(uCubeMap, L, lod).rgb;
+                vec3 sampleColor = sample_source(L, lod).rgb;
                 color += sampleColor * NdotL;
                 weight += NdotL;
             }

@@ -52,8 +52,12 @@ class EnvironmentRenderer
         const shader = shaderCache.getShaderProgram(vertShader, fragShader);
 
         gl.useProgram(shader.program);
+        //webGl.setTexture(shader.getUniformLocation("u_GGXEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
+        //webGl.setTexture(shader.getUniformLocation("u_GGXEnvSampler"), state.environment, state.environment.diffuseEnvMap, 0);
         webGl.setTexture(shader.getUniformLocation("u_GGXEnvSampler"), state.environment, state.environment.specularEnvMap, 0);
-        shader.updateUniform("u_MipCount", state.environment.mipCount);
+        webGl.setTexture()
+        //shader.updateUniform("u_MipCount", state.environment.mipCount);
+        shader.updateUniform("u_MipCount", 1);
         shader.updateUniform("u_EnvBlurNormalized", state.renderingParameters.blurEnvironmentMap ? 0.6 : 0.0);
         shader.updateUniform("u_EnvIntensity", 1.0);
 
